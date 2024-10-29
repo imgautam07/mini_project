@@ -1,18 +1,26 @@
-#[macro_use]
-extern crate rocket;
+use rocket::{launch, routes};
 
-#[get("/")]
-fn hello() -> &'static str {
-    "Hello, world!"
-}
-
-#[get("/api")]
-
-fn api() -> &'static str {
-    "This is our API test endpoint"
-}
+mod auth;
+mod db;
+mod models;
+mod routes;
 
 #[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![hello, api])
+async fn rocket() -> _ {
+    let db = db::init_db().await.expect("Database initialization failed");
+
+    rocket::build()
+        .configure(rocket::Config {
+            port: 9000,
+            ..rocket::Config::default()
+        })
+        .manage(db)
+        .mount(
+            "/api",
+            routes![
+                routes::auth::signup,
+                routes::auth::login,
+                routes::protected::protected_route
+            ],
+        )
 }
