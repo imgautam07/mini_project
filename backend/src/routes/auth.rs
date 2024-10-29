@@ -19,7 +19,7 @@ pub async fn signup(
     let password = form_data.password.clone();
 
     let existing_user: Option<User> = db
-        .query("SELECT * FROM user WHERE email = $email")
+        .query("SELECT * FROM users WHERE email = $email")
         .bind(("email", form_data.email))
         .await
         .map_err(|_| Status::InternalServerError)?
@@ -34,8 +34,10 @@ pub async fn signup(
     let hashed_password =
         hash(password.as_bytes(), DEFAULT_COST).map_err(|_| Status::InternalServerError)?;
 
-    if let Err(e) = db
-        .create::<Option<User>>("person")
+    let user_id;
+
+    match db
+        .create::<Option<User>>("users")
         .content(User {
             id: None,
             email: mail.clone(),
@@ -44,10 +46,25 @@ pub async fn signup(
         })
         .await
     {
-        // Log the error if creation fails
-        eprintln!("Failed to create user: {:?}", e);
+        Ok(Some(user)) => {
+            user_id = user.id.unwrap().to_string();
+            println!("User created with ID: {:?}", user_id);
+        }
+        Ok(None) => {
+            eprintln!("No user created, unexpected result");
+            user_id = String::from("");
+        }
+        Err(e) => {
+            eprintln!("Failed to create user: {:?}", e);
+            user_id = String::from("");
+        }
     }
-    let token = auth::create_token(&mail).map_err(|_| Status::InternalServerError)?;
+
+    if user_id.is_empty() {
+        return Err(Status::InternalServerError);
+    }
+
+    let token = auth::create_token(&user_id).map_err(|_| Status::InternalServerError)?;
 
     Ok(Json(AuthResponse { token }))
 }
@@ -61,7 +78,7 @@ pub async fn login(
 
     // Find user by email
     let user: Option<User> = db
-        .query("SELECT * FROM user WHERE email = $email")
+        .query("SELECT * FROM users WHERE email = $email")
         .bind(("email", form_data.email))
         .await
         .map_err(|_| Status::InternalServerError)?
