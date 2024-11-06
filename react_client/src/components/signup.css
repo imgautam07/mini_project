@@ -1,0 +1,10 @@
+/* src/components/Signup.css */
+.signup-container {
+  background: url('C:\Users\shrut\Desktop\mini_project\react_client\public\noise.png'); 
+  background-size: cover;
+  opacity: 1; 
+  border-radius: 40px; /* Keep your padding */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+}
+
+  
