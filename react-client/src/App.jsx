@@ -1,29 +1,34 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Search from "./pages/Search";
-import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
     <Router>
-      {/* Navbar at the top */}
-      <Navbar />
-      <div className="flex">
-        {/* Sidebar below Navbar */}
-        <Sidebar />
-        <div className="flex-1 p-4">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </div>
-      </div>
+      <Routes>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        
+        {/* For Dashboard, include Navbar and Sidebar */}
+        <Route
+          path="/dashboard"
+          element={
+            <>
+              <Navbar />
+              <div className="flex">
+                <Sidebar />
+                <div className="flex-1 p-4">
+                  <Dashboard />
+                </div>
+              </div>
+            </>
+          }
+        />
+      </Routes>
     </Router>
   );
 };
