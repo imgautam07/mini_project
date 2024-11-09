@@ -14,8 +14,8 @@ async fn rocket() -> _ {
 
     rocket::build()
         .configure(rocket::Config {
-            port: 9000,
             address: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
+            port: 9000,
             ..rocket::Config::default()
         })
         .manage(db)
