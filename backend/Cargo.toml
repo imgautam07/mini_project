@@ -11,6 +11,6 @@ jsonwebtoken = "9.3.0"
 rocket = { version = "0.5", features = ["json", "secrets", "tls", "mtls"]}
 serde = { version = "1.0.214",  features = ["derive"] }
 serde_json = "1.0.132"
-surrealdb = {version = "2.0.4", features = ["kv-rocksdb"]}
+surrealdb = "2.0.4"
 thiserror = "1.0.65"
 tokio = {version = "1.41.0", features = ["full"]}
