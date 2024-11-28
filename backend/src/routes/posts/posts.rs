@@ -1,7 +1,5 @@
-use std::fmt::format;
-
-use rocket::{futures::future::ok, http::Status, serde::json::Json, State};
-use surrealdb::{engine::remote::ws::Client, sql::Thing, Surreal};
+use rocket::{http::Status, serde::json::Json, State};
+use surrealdb::{engine::remote::ws::Client, Surreal};
 
 use crate::{models::CustomResponse, routes::protected::AuthenticatedUser};
 
@@ -46,7 +44,7 @@ pub async fn create_post(
 
 #[get("/get_posts?<page>&<limit>")]
 pub async fn get_posts(
-    user: AuthenticatedUser,
+    _user: AuthenticatedUser,
     db: &State<Surreal<Client>>,
     page: Option<usize>,
     limit: Option<usize>,
@@ -78,6 +76,81 @@ pub async fn get_posts(
     Ok(Json(posts))
 }
 
+#[get("/your_posts?<page>&<limit>")]
+pub async fn your_posts(
+    user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+    page: Option<usize>,
+    limit: Option<usize>,
+) -> Result<Json<Vec<Post>>, Status> {
+    let user_id: String = user.user_id;
+    let page = page.unwrap_or(1);
+    let limit = limit.unwrap_or(10);
+    let offset = (page - 1) * limit;
+
+    let posts: Vec<Post> = db
+        .query(
+            "SELECT * FROM post 
+            where user_id = $uid
+            ORDER BY created_at DESC 
+            LIMIT $limit 
+            START $offset",
+        )
+        .bind(("limit", limit))
+        .bind(("offset", offset))
+        .bind(("uid", user_id))
+        .await
+        .map_err(|e| {
+            println!("Fetch Posts Error: {}", e);
+            Status::InternalServerError
+        })?
+        .take(0)
+        .map_err(|e| {
+            println!("Fetch Posts Error: {}", e);
+            Status::InternalServerError
+        })?;
+
+    Ok(Json(posts))
+}
+
+#[get("/posts_by_uid/<user_id>?<page>&<limit>")]
+pub async fn posts_by_uid(
+    _user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+    page: Option<usize>,
+    limit: Option<usize>,
+    user_id: Option<&str>,
+) -> Result<Json<Vec<Post>>, Status> {
+    let page = page.unwrap_or(1);
+    let limit = limit.unwrap_or(10);
+    let offset = (page - 1) * limit;
+    let u = user_id.unwrap().to_string();
+
+    let posts: Vec<Post> = db
+        .query(
+            "SELECT * FROM post 
+            where user_id = $uid
+            ORDER BY created_at DESC 
+            LIMIT $limit 
+            START $offset",
+        )
+        .bind(("limit", limit))
+        .bind(("offset", offset))
+        .bind(("uid", u))
+        .await
+        .map_err(|e| {
+            println!("Fetch Posts Error: {}", e);
+            Status::InternalServerError
+        })?
+        .take(0)
+        .map_err(|e| {
+            println!("Fetch Posts Error: {}", e);
+            Status::InternalServerError
+        })?;
+
+    Ok(Json(posts))
+}
+
 #[delete("/delete_post/<post_id>")]
 pub async fn delete_post(
     user: AuthenticatedUser,
@@ -86,7 +159,7 @@ pub async fn delete_post(
 ) -> Result<Json<CustomResponse>, Status> {
     let full_post_id = format!("post:{}", post_id);
 
-    let p: Option<Post> = db.delete(("post", post_id)).await.map_err(|e| {
+    let _p: Option<Post> = db.delete(("post", post_id)).await.map_err(|e| {
         println!("Post Verification Error: {}", e);
         Status::InternalServerError
     })?;

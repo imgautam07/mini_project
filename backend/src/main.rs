@@ -3,7 +3,10 @@ extern crate rocket;
 
 use std::net::{IpAddr, Ipv4Addr};
 
+use rocket::fs::{relative, FileServer};
+use rocket::tokio::sync::broadcast::channel;
 use rocket::{launch, routes};
+use routes::chat::models::ChatMessage;
 
 mod auth;
 mod db;
@@ -23,6 +26,7 @@ async fn rocket() -> _ {
             ..rocket::Config::default()
         })
         .manage(db)
+        .manage(channel::<ChatMessage>(1024).0)
         .mount(
             "/api",
             routes![
@@ -34,6 +38,18 @@ async fn rocket() -> _ {
                 routes::posts::posts::create_post,
                 routes::posts::posts::get_posts,
                 routes::posts::posts::delete_post,
+                routes::posts::posts::your_posts,
+                routes::posts::posts::posts_by_uid,
+                routes::projects::projects::create_project,
+                routes::projects::projects::get_projects,
+                routes::projects::projects::your_projects,
+                routes::projects::projects::update_project,
+                routes::projects::projects::delete_project,
             ],
         )
+        .mount(
+            "/api/chat",
+            routes![routes::chat::chat::post, routes::chat::chat::events,],
+        )
+        .mount("/", FileServer::from(relative!("static")))
 }

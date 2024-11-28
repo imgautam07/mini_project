@@ -6,9 +6,9 @@ const JWT_SECRET: &[u8] = b"your-secret-key";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: String,  // User ID
-    pub exp: i64,     // Expiration time
-    pub iat: i64,     // Issued at
+    pub sub: String,
+    pub exp: i64,
+    pub iat: i64,
 }
 
 pub fn create_token(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {

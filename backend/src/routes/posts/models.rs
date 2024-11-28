@@ -1,4 +1,3 @@
-use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
@@ -22,26 +21,4 @@ pub struct Post {
    pub created_at: Option<String>,
    pub likes_count: Option<u32>,
    pub comments_count: Option<u32>,
-}
-
-impl Post {
-   pub fn new(
-       user_id: String, 
-       title: String, 
-       content: String, 
-       tags: Option<Vec<String>>, 
-       image: Option<String>
-   ) -> Self {
-       Post {
-           id: None,
-           user_id,
-           title,
-           content,
-           tags,
-           image,
-           created_at: Some(chrono::Utc::now().to_rfc3339()),
-           likes_count: Some(0),
-           comments_count: Some(0),
-       }
-   }
 }

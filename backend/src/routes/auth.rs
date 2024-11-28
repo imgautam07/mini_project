@@ -34,7 +34,6 @@ pub async fn signup(
         return Err(Status::Conflict);
     }
 
-    // Hash password
     let hashed_password =
         hash(password.as_bytes(), DEFAULT_COST).map_err(|_| Status::InternalServerError)?;
 
@@ -80,7 +79,6 @@ pub async fn login(
 ) -> Result<Json<AuthResponse>, Status> {
     let form_data = login_data.into_inner();
 
-    // Find user by email
     let user: Option<User> = db
         .query("SELECT * FROM users WHERE email = $email")
         .bind(("email", form_data.email))
@@ -91,7 +89,6 @@ pub async fn login(
 
     let user = user.ok_or(Status::Unauthorized)?;
 
-    // Verify password
     let password_matches = verify(form_data.password.as_bytes(), &user.password)
         .map_err(|_| Status::InternalServerError)?;
 
@@ -99,7 +96,6 @@ pub async fn login(
         return Err(Status::Unauthorized);
     }
 
-    // Generate JWT token
     let token = auth::create_token(&user.id.unwrap().to_string())
         .map_err(|_| Status::InternalServerError)?;
 
