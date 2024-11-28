@@ -1,5 +1,6 @@
 use surrealdb::{engine::remote::ws::Client, engine::remote::ws::Ws, opt::auth::Root, Surreal};
 
+// 3.12.1.104
 pub async fn init_db() -> surrealdb::Result<Surreal<Client>> {
     let db = Surreal::new::<Ws>("0.0.0.0:8000").await?;
 

@@ -12,8 +12,10 @@ dependencies:
     sdk: flutter
   flutter_iconly: ^1.0.2
   flutter_screenutil: ^5.9.3
-  flutter_svg: ^2.0.13
+  flutter_svg: ^2.0.16
+  fluttertoast: ^8.2.8
   gradient_borders: ^1.0.1
+  http: ^1.2.2
   iconsax: ^0.0.8
   image_cropper: ^8.0.2
   image_picker: ^1.1.2

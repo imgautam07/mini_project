@@ -7,7 +7,11 @@ use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
 
 use crate::auth;
-use crate::models::{AuthResponse, LoginRequest, SignupRequest, User};
+use crate::models::{
+    AuthResponse, CustomResponse, LoginRequest, ProfileUpdateRequest, SignupRequest, User, UserInfo,
+};
+
+use super::protected::AuthenticatedUser;
 
 #[post("/signup", data = "<signup_data>")]
 pub async fn signup(
@@ -100,4 +104,56 @@ pub async fn login(
         .map_err(|_| Status::InternalServerError)?;
 
     Ok(Json(AuthResponse { token }))
+}
+
+#[post("/update_profile", data = "<profile_data>")]
+pub async fn update_profile(
+    user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+    profile_data: Json<ProfileUpdateRequest>,
+) -> Result<Json<CustomResponse>, Status> {
+    let profile = profile_data.into_inner();
+
+    let user_id: String = user.user_id;
+
+    db.query(
+        "UPSERT type::thing('user_profile', $id) 
+         CONTENT { 
+            id : $id,
+            name: $name, 
+            professions: $professions, 
+            experience: $experience, 
+            technologies: $technologies 
+         }",
+    )
+    .bind(("id", user_id))
+    .bind(("name", profile.name))
+    .bind(("professions", profile.professions))
+    .bind(("experience", profile.experience))
+    .bind(("technologies", profile.technologies))
+    .await
+    .map_err(|e| {
+        println!("Database Upsert Error: {}", e);
+        Status::InternalServerError
+    })?;
+
+    Ok(Json(CustomResponse {
+        message: String::from("User updated"),
+        status_code: Status::Ok,
+    }))
+}
+
+#[get("/get_profile")]
+pub async fn get_profile(
+    user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+) -> Result<Json<UserInfo>, Status> {
+    let user_id: String = user.user_id;
+
+    let profile: Option<UserInfo> = db.select(("user_profile", user_id)).await.map_err(|e| {
+        println!("Database Fetch Error: {}", e);
+        Status::InternalServerError
+    })?;
+
+    profile.map(Json).ok_or(Status::NotFound)
 }

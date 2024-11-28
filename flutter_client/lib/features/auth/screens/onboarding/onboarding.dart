@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    "Music for the journey inward",
+                    "Get connected professionally",
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
@@ -65,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const Spacer(flex: 2),
                   AppButton.fromText(
-                    text: "Start my journey",
+                    text: "Get Started",
                     icon: Icons.arrow_forward,
                     onTap: () {
                       Navigator.push(

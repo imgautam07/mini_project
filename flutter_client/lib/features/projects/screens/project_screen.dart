@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
 import 'package:flutter_client/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_client/features/projects/screens/project_detail.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ProjectScreen extends StatefulWidget {
@@ -52,9 +54,15 @@ class _ProjectScreenState extends State<ProjectScreen> {
             itemCount: 14,
             separatorBuilder: (context, index) => const SizedBox(height: 20),
             itemBuilder: (context, index) {
-              return CupertinoButton(
-                onPressed: () {},
-                padding: EdgeInsets.zero,
+              return ScaleButton(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (_) => const ProjectDetail(),
+                    ),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(

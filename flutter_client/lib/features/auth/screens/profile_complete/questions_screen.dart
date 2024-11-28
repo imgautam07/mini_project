@@ -320,7 +320,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                   ScaleButton(
                     onTap: ((page == 0 && _answers.intentions.isEmpty) ||
                             (page == 1 && _answers.experience == '') ||
-                            (selectedTech.isEmpty))
+                            (page == 2 && selectedTech.isEmpty))
                         ? null
                         : () {
                             if (cPage <= 1.5) {

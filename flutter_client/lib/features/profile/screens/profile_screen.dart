@@ -1,4 +1,5 @@
 import 'package:flutter_client/common/buttons/scale_button.dart';
+import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
 import 'package:flutter_client/features/profile/screens/achievement_screen.dart';
 import 'package:flutter_client/features/profile/screens/settings/settings_screen.dart';
@@ -66,6 +67,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               'assets/images/profile.png',
                               width: 80.w,
                             ),
+                            SizedBox(width: 20.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Gautam Yadav",
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "gaut....@gmail.com | Developer",
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w400,
+                                      color:
+                                          AppColors.textColor.withOpacity(.5),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -74,11 +99,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 24.h),
                   Row(
                     children: [
-                      _valueCard(title: "Sessions", value: "12"),
+                      _valueCard(title: "Projects", value: "12"),
                       SizedBox(width: 8.w),
-                      _valueCard(title: "Minutes", value: "240"),
-                      SizedBox(width: 8.w),
-                      _valueCard(title: "Days", value: "2"),
+                      _valueCard(title: "Works", value: "48H"),
+                      // SizedBox(width: 8.w),
+                      // _valueCard(title: "Days", value: "2"),
                     ],
                   ),
                   SizedBox(height: 24.h),
