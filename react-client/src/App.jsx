@@ -1,6 +1,9 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Search from "./pages/Search";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Sidebar from "./components/Sidebar";
@@ -13,21 +16,23 @@ const App = () => {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         
-        {/* For Dashboard, include Navbar and Sidebar */}
+        {/* Redirect to dashboard directly after login */}
         <Route
           path="/dashboard"
           element={
-            <>
-              <Navbar />
-              <div className="flex">
-                <Sidebar />
-                <div className="flex-1 p-4">
-                  <Dashboard />
-                </div>
+            <div className="flex">
+              <Sidebar />
+              <div className="flex-1">
+                <Navbar />
+                <Dashboard />
               </div>
-            </>
+            </div>
           }
         />
+
+        <Route path="/search" element={<Search />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );
