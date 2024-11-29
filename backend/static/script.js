@@ -143,7 +143,7 @@ function init() {
     if (!message || !username) return;
 
     if (STATE.connected) {
-      fetch("/message", {
+      fetch("/api/chat/message", {
         method: "POST",
         body: new URLSearchParams({ room, username, message }),
       }).then((response) => {
@@ -166,7 +166,7 @@ function init() {
   })
 
   // Subscribe to server-sent events.
-  subscribe("/events");
+  subscribe("/api/chat/events");
 }
 
 init();

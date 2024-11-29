@@ -109,34 +109,74 @@ pub async fn update_profile(
     profile_data: Json<ProfileUpdateRequest>,
 ) -> Result<Json<CustomResponse>, Status> {
     let profile = profile_data.into_inner();
+    let uid: String = String::from(user.user_id);
 
-    let user_id: String = user.user_id;
+    // First, check if the user profile exists
+    let existing_profile: Option<UserInfo> = db
+        .query("SELECT * FROM type::thing('user_profile', $id)")
+        .bind(("id", uid.clone()))
+        .await
+        .map_err(|e| {
+            println!("Database Query Error: {}", e);
+            Status::InternalServerError
+        })?
+        .take(0)
+        .map_err(|_| Status::NotFound)?;
+
+    // If profile doesn't exist, perform an insert
+    if existing_profile.is_none() {
+        let idd: String = String::from(uid.clone());
+
+        db.query(
+            "CREATE type::thing('user_profile', $id) CONTENT {
+                id: $id,
+                name: $name,
+                professions: $professions,
+                experience: $experience,
+                technologies: $technologies,
+                friends: []
+            }",
+        )
+        .bind(("id", idd))
+        .bind(("name", profile.name))
+        .bind(("professions", profile.professions))
+        .bind(("experience", profile.experience))
+        .bind(("technologies", profile.technologies))
+        .await
+        .map_err(|e| {
+            println!("Database Insert Error: {}", e);
+            Status::InternalServerError
+        })?;
+
+        return Ok(Json(CustomResponse {
+            message: String::from("User profile created"),
+            status_code: Status::Created,
+        }));
+    }
 
     db.query(
-        "UPSERT type::thing('user_profile', $id) 
-         CONTENT { 
-            id : $id,
-            name: $name, 
-            professions: $professions, 
-            experience: $experience, 
-            technologies: $technologies 
-         }",
+        "UPDATE type::thing('user_profile', $id) SET  {
+            name: $name,
+            professions: $professions,
+            experience: $experience,
+            technologies: $technologies,
+        }",
     )
-    .bind(("id", user_id))
+    .bind(("id", uid))
     .bind(("name", profile.name))
     .bind(("professions", profile.professions))
     .bind(("experience", profile.experience))
     .bind(("technologies", profile.technologies))
     .await
     .map_err(|e| {
-        println!("Database Upsert Error: {}", e);
+        println!("Database Insert Error: {}", e);
         Status::InternalServerError
     })?;
 
-    Ok(Json(CustomResponse {
-        message: String::from("User updated"),
-        status_code: Status::Ok,
-    }))
+    return Ok(Json(CustomResponse {
+        message: String::from("User profile created"),
+        status_code: Status::Created,
+    }));
 }
 
 #[get("/get_profile")]
@@ -152,4 +192,42 @@ pub async fn get_profile(
     })?;
 
     profile.map(Json).ok_or(Status::NotFound)
+}
+
+#[get("/user_by_id/<user_id>")]
+pub async fn user_by_id(
+    _user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+    user_id: &str,
+) -> Result<Json<UserInfo>, Status> {
+    let profile: Option<UserInfo> = db.select(("user_profile", user_id)).await.map_err(|e| {
+        println!("Database Fetch Error: {}", e);
+        Status::InternalServerError
+    })?;
+
+    profile.map(Json).ok_or(Status::NotFound)
+}
+
+#[put("/add_friend/<user_id>")]
+pub async fn add_friend(
+    user: AuthenticatedUser,
+    db: &State<Surreal<Client>>,
+    user_id: &str,
+) -> Result<Json<CustomResponse>, Status> {
+    let idd: String = user.user_id.clone();
+    let friend_id = String::from(user_id);
+
+    db.query("UPDATE type::thing('user_profile', $id) SET  friends += $friendId")
+        .bind(("id", idd))
+        .bind(("friendId", friend_id))
+        .await
+        .map_err(|e| {
+            println!("Database Insert Error: {}", e);
+            Status::InternalServerError
+        })?;
+
+    Ok(Json(CustomResponse {
+        message: String::from("Friend Added"),
+        status_code: Status::Ok,
+    }))
 }

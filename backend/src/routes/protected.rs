@@ -1,9 +1,10 @@
+use crate::auth;
 use rocket::get;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::json::Json;
-use crate::auth;
 
+#[derive(Clone)]
 pub struct AuthenticatedUser {
     pub user_id: String,
 }

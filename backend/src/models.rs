@@ -14,6 +14,7 @@ pub struct UserInfo {
     pub id: Option<Thing>,
     name: String,
     professions: Vec<String>,
+    friends: Vec<String>,
     experience: String,
     technologies: Vec<String>,
 }
@@ -38,13 +39,14 @@ pub struct LoginRequest {
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AuthResponse {
     pub token: String,
 }
 
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct  CustomResponse{
-    pub message : String,
-    pub status_code : Status,
+pub struct CustomResponse {
+    pub message: String,
+    pub status_code: Status,
 }

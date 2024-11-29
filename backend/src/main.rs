@@ -35,6 +35,8 @@ async fn rocket() -> _ {
                 routes::protected::protected_route,
                 routes::auth::update_profile,
                 routes::auth::get_profile,
+                routes::auth::user_by_id,
+                routes::auth::add_friend,
                 routes::posts::posts::create_post,
                 routes::posts::posts::get_posts,
                 routes::posts::posts::delete_post,
