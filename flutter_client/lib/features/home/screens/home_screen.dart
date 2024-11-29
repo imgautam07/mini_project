@@ -1,10 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_client/common/buttons/app_%20button.dart';
 import 'package:flutter_client/common/buttons/scale_button.dart';
 
 import 'package:flutter_client/common/constants/app_images.dart';
+import 'package:flutter_client/common/models/user_info_model.dart';
 import 'package:flutter_client/features/auth/services/auth_services.dart';
 import 'package:flutter_client/features/chat/screens/chat_screen.dart';
+import 'package:flutter_client/features/home/models/post_model.dart';
+import 'package:flutter_client/features/home/provider/post_provider.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
@@ -19,6 +25,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PostProvider>(context, listen: false).fetchPosts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -40,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.vertical(
                     top: Radius.circular(20)) // <-- Radius
                 ),
-            toolbarHeight: 275.h,
+            toolbarHeight: 135.h,
             title: _appBar(),
             // expandedHeight: 250.0,
             // flexibleSpace: FlexibleSpaceBar(
@@ -48,38 +62,66 @@ class _HomeScreenState extends State<HomeScreen> {
             // ),
           ),
         ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            childCount: 4,
-            (context, index) {
-              return Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _profile(40.w),
-                        SizedBox(width: 12.w),
-                        Column(
+        Consumer<PostProvider>(builder: (context, value, _) {
+          return SliverList.separated(
+            itemCount: value.posts.length,
+            separatorBuilder: (context, index) => SizedBox(height: 12.h),
+            itemBuilder: (context, index) {
+              return _postCard(value.posts[index]);
+            },
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _postCard(PostModel model) {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              FutureBuilder(
+                  future: Provider.of<PostProvider>(context, listen: false)
+                      .getUserById(model.userId),
+                  builder: (context, snapshot) {
+                    return CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: snapshot.data == null
+                          ? null
+                          : () {
+                              _profileModal(snapshot.data!);
+                            },
+                      child: Container(
+                        color: Colors.white.withOpacity(0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Priyanshi"),
+                            Text(
+                              snapshot.data?.name ?? "",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
                             Row(
                               children: [
                                 Icon(
-                                  IconlyLight.location,
+                                  IconlyLight.work,
                                   size: 14,
                                   color: Colors.white.withOpacity(.5),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  "Capetown, Agra, India",
+                                  snapshot.data?.professions.first ?? "",
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: Colors.white.withOpacity(.5),
@@ -88,68 +130,95 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ],
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 20.h),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/images/app.jpg',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "I'm back with a mobile app exploration. This time, I tried to create a Notes App... more",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.white.withOpacity(.85),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        ScaleButton(
-                          scale: 1.2,
-                          onTap: () {},
-                          child: const Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Icon(IconlyLight.heart)),
-                        ),
-                        ScaleButton(
-                          scale: 1.2,
-                          onTap: () {},
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Image.asset(
-                              AppImages.comment,
-                              width: 24,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Image.asset(
-                            AppImages.more,
-                            width: 24,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
+                    );
+                  })
+            ],
           ),
-        ),
-      ],
+          SizedBox(height: 20.h),
+          Text(
+            model.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15.sp,
+            ),
+          ),
+          Text(model.content),
+          const SizedBox(height: 10),
+          Wrap(
+            children: model.tags
+                .map(
+                  (e) => Container(
+                    margin: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text("#${e.toLowerCase()}"),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              ScaleButton(
+                scale: 1.2,
+                onTap: () {},
+                child: const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Icon(IconlyLight.heart)),
+              ),
+              ScaleButton(
+                scale: 1.2,
+                onTap: () {},
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Image.asset(
+                    AppImages.comment,
+                    width: 24,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () async {
+                  log(model.id);
+                  var res =
+                      await Provider.of<PostProvider>(context, listen: false)
+                          .deletePost("post:${model.id}");
+                  log(" $res");
+                },
+                icon: Image.asset(
+                  AppImages.more,
+                  width: 24,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<dynamic> _profileModal(UserInfoModel model) {
+    return showCupertinoModalPopup(
+      barrierColor: const Color(0xCC0A0826),
+      context: context,
+      builder: (context) {
+        return _ProfileDailog(model: model);
+      },
     );
   }
 
   Container _appBar() {
     return Container(
-      height: 275.h,
+      height: 130.h,
       width: 375.w,
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -186,28 +255,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   int hour = DateTime.now().hour;
 
                   if (hour >= 5 && hour < 12) {
-                    message = 'Good Morning';
+                    message = 'Morning';
                   } else if (hour == 12) {
-                    message = 'Good Noon';
+                    message = 'Noon';
                   } else if (hour > 12 && hour < 17) {
-                    message = 'Good Afternoon';
+                    message = 'Afternoon';
                   } else if (hour >= 17 && hour < 20) {
-                    message = 'Good Evening';
+                    message = 'Evening';
                   } else {
-                    message = 'Good Night';
+                    message = 'Night';
                   }
 
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Text(
-                      "$message, Frank",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 26.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Consumer<AuthServices>(builder: (context, value, _) {
+                      return Text(
+                        "$message, ${value.userInfoModel?.name ?? "-"}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 26.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }),
                   );
                 },
               ),
@@ -226,48 +297,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             ],
-          ),
-          SizedBox(height: 20.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Text(
-              "Suggested for you",
-              style: TextStyle(
-                fontSize: 20.sp,
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            height: 100.h,
-            child: ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              scrollDirection: Axis.horizontal,
-              itemCount: 5,
-              separatorBuilder: (context, index) => SizedBox(width: 21.w),
-              itemBuilder: (context, index) {
-                return SizedBox(
-                  width: 80.w,
-                  child: Column(
-                    children: [
-                      _profile(80.w),
-                      SizedBox(height: 4.h),
-                      Flexible(
-                        child: Text(
-                          "@priyanshii_",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.white.withOpacity(.5),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -305,5 +334,141 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+}
+
+class _ProfileDailog extends StatelessWidget {
+  const _ProfileDailog({
+    required this.model,
+  });
+
+  final UserInfoModel model;
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(builder: (context, setState) {
+      return Padding(
+        padding: MediaQuery.viewInsetsOf(context),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(32)),
+              gradient: const LinearGradient(
+                transform: GradientRotation(-360 + 128),
+                colors: [
+                  Color(0xFF412A81),
+                  Color(0xFF140739),
+                ],
+              ),
+              image: DecorationImage(
+                image: AssetImage(AppImages.noiseImage),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 20),
+                Text(
+                  model.name,
+                  style: TextStyle(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Row(
+                  children: [
+                    Icon(
+                      IconlyLight.work,
+                      size: 12,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Profession",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  children: model.professions
+                      .map(
+                        (e) => Container(
+                          margin: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(e),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 20),
+                const Row(
+                  children: [
+                    Icon(
+                      IconlyLight.paper,
+                      size: 12,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Skills",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  children: model.technologies
+                      .map(
+                        (e) => Container(
+                          margin: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(e),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 30),
+                AppButton.fromText(
+                  text: "Add Friend",
+                  icon: IconlyLight.addUser,
+                  onTap: () async {
+                    var res =
+                        await Provider.of<AuthServices>(context, listen: false)
+                            .addFriend(model.id);
+
+                    log("$res");
+
+                    if (res && context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+                SizedBox(height: 20 + MediaQuery.paddingOf(context).bottom),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

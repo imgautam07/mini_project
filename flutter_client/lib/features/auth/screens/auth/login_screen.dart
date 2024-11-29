@@ -1,19 +1,16 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_client/common/animations/page_transition.dart';
 import 'package:flutter_client/common/buttons/app_%20button.dart';
-import 'package:flutter_client/common/buttons/pre_icon_button.dart';
 import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
-import 'package:flutter_client/common/constants/app_strings.dart';
-import 'package:flutter_client/common/utils.dart';
 import 'package:flutter_client/common/widgets/custom_textfield.dart';
 import 'package:flutter_client/features/auth/screens/auth/register_screen.dart';
 import 'package:flutter_client/features/auth/screens/profile_complete/questions_screen.dart';
 import 'package:flutter_client/features/auth/services/auth_services.dart';
-import 'package:flutter_client/features/home/screens/home_screen.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_client/features/root_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:string_validator/string_validator.dart';
 
@@ -187,11 +184,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: "Sign In",
                         onTap: () async {
                           if (_fKey.currentState?.validate() ?? false) {
-                            Navigator.pushReplacement(
-                              context,
-                              CupertinoPageRoute(
-                                  builder: (_) => const RootScreen()),
-                            );
+                            var p = Provider.of<AuthServices>(context,
+                                listen: false);
+                            var r1 = await p.login(
+                                mail: _mail.text, password: _password.text);
+
+                            if (!r1) {
+                              Fluttertoast.showToast(
+                                  msg: "Failed to login bad credentails.");
+                              return;
+                            }
+
+                            var r2 = await p.accountStatus();
+
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                CupertinoPageRoute(builder: (_) {
+                                  if (r2) {
+                                    return const RootScreen();
+                                  }
+                                  return const QuestionsScreen();
+                                }),
+                              );
+                            }
                           }
                         },
                       ),

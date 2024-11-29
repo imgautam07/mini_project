@@ -1,12 +1,15 @@
 import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
+import 'package:flutter_client/features/auth/services/auth_services.dart';
 import 'package:flutter_client/features/profile/screens/achievement_screen.dart';
 import 'package:flutter_client/features/profile/screens/settings/settings_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_client/main.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +21,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    var provider = context.watch<AuthServices>();
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
@@ -73,14 +78,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Gautam Yadav",
+                                    provider.userInfoModel?.name ?? "-",
                                     style: TextStyle(
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    "gaut....@gmail.com | Developer",
+                                    provider.userInfoModel?.experience ?? "-",
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w400,
@@ -99,9 +104,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 24.h),
                   Row(
                     children: [
-                      _valueCard(title: "Projects", value: "12"),
+                      _valueCard(
+                          title: "Professions",
+                          value:
+                              "${provider.userInfoModel?.professions.length ?? 0}"),
                       SizedBox(width: 8.w),
-                      _valueCard(title: "Works", value: "48H"),
+                      _valueCard(
+                          title: "Skills",
+                          value:
+                              "${provider.userInfoModel?.technologies.length ?? 0}"),
                       // SizedBox(width: 8.w),
                       // _valueCard(title: "Days", value: "2"),
                     ],

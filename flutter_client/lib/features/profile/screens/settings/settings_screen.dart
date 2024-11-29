@@ -68,7 +68,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Navigator.push(
                               context,
                               CupertinoPageRoute(
-                                builder: (_) => const PersonalInfoScreen(),
+                                builder: (_) => const PersonalInfoScreen(
+                                  exp: "",
+                                  prof: [],
+                                  tech: [],
+                                ),
                               ),
                             );
                           },

@@ -18,7 +18,7 @@ class AppButton extends StatefulWidget {
   final FutureOr<void> Function() onTap;
   final EdgeInsets? padding;
 
-  static fromText({
+  static Widget fromText({
     required String text,
     required FutureOr<void> Function() onTap,
     IconData? icon,

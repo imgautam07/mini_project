@@ -3,8 +3,11 @@ import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
 import 'package:flutter_client/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_client/features/projects/models/project_model.dart';
+import 'package:flutter_client/features/projects/provider/project_provider.dart';
 import 'package:flutter_client/features/projects/screens/project_detail.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class ProjectScreen extends StatefulWidget {
   const ProjectScreen({super.key});
@@ -48,90 +51,94 @@ class _ProjectScreenState extends State<ProjectScreen> {
             ),
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.only(top: 20),
-          sliver: SliverList.separated(
-            itemCount: 14,
-            separatorBuilder: (context, index) => const SizedBox(height: 20),
-            itemBuilder: (context, index) {
-              return ScaleButton(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (_) => const ProjectDetail(),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(.9),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/project.png',
-                            width: 100,
-                          ),
-                        ),
+        Consumer<ProjectProvider>(builder: (context, value, _) {
+          return SliverPadding(
+            padding: const EdgeInsets.only(top: 20),
+            sliver: SliverList.separated(
+              itemCount: value.projects.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 20),
+              itemBuilder: (context, index) {
+                ProjectModel model = value.projects[index];
+
+                return ScaleButton(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (_) => ProjectDetail(model: model),
                       ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Food Delivery Project",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(.9),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/images/project.png',
+                              width: 100,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                model.title,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Team :",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(.4),
-                                    fontSize: 12,
+                              Row(
+                                children: [
+                                  Text(
+                                    "Members :",
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(.4),
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  " Flutter Your Way",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(.4),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                  Text(
+                                    " ${model.userIds.length}",
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(.4),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset(
-                          AppImages.more,
-                          width: 24,
+                        IconButton(
+                          onPressed: () {},
+                          icon: Image.asset(
+                            AppImages.more,
+                            width: 24,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
+                );
+              },
+            ),
+          );
+        }),
       ],
     );
   }

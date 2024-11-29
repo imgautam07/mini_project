@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:developer';
+
 import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
@@ -23,7 +25,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   double cPage = 0.0;
   final PageController _pageController = PageController();
   final _Answers _answers = _Answers();
-  List<String> selectedTech = [];
 
   @override
   void initState() {
@@ -261,19 +262,15 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                                           ),
                                         )
                                         .toList(),
-                                    selected: selectedTech,
+                                    selected: _answers.technologies,
                                     onEntrySelected: (value) {
-                                      if (selectedTech.contains(value.value)) {
-                                        selectedTech.remove(value.value);
+                                      if (_answers.technologies
+                                          .contains(value.value)) {
+                                        _answers.technologies
+                                            .remove(value.value);
                                       } else {
-                                        selectedTech.add(value.value);
+                                        _answers.technologies.add(value.value);
                                       }
-                                      setState(() {});
-                                      String val =
-                                          _answers.startAt.split('-')[1];
-                                      _answers.startAt = _answers.startAt
-                                          .replaceAll(val, value.value);
-
                                       setState(() {});
                                     },
                                     hintText: "Select technologies",
@@ -285,7 +282,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                                     vertical: 10.h,
                                   ),
                                   child: Wrap(
-                                    children: selectedTech
+                                    children: _answers.technologies
                                         .map(
                                           (e) => Container(
                                             margin: const EdgeInsets.only(
@@ -316,11 +313,13 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
               SizedBox(height: 8.h),
               Row(
                 children: [
-                  const Spacer(),
+                  Builder(builder: (context) {
+                    return const Spacer();
+                  }),
                   ScaleButton(
-                    onTap: ((page == 0 && _answers.intentions.isEmpty) ||
+                    onTap: ((page == 0 && _answers.professions.isEmpty) ||
                             (page == 1 && _answers.experience == '') ||
-                            (page == 2 && selectedTech.isEmpty))
+                            (page == 2 && _answers.technologies.isEmpty))
                         ? null
                         : () {
                             if (cPage <= 1.5) {
@@ -359,58 +358,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             ],
           )),
         ],
-      ),
-    );
-  }
-
-  Widget _question3(String image, String text) {
-    String value = _answers.startAt.split('-')[0];
-
-    return ScaleButton(
-      onTap: value == text
-          ? null
-          : () {
-              _answers.startAt = _answers.startAt.replaceAll(value, text);
-              setState(() {});
-            },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        width: 109.w,
-        height: 92.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white.withOpacity(.1),
-          border: value == text
-              ? const GradientBoxBorder(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFFFFB383),
-                      Color(0xFFDD96D6),
-                      Color(0xFF9452FF),
-                    ],
-                  ),
-                )
-              : Border.all(
-                  color: Colors.white.withOpacity(.1),
-                ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset(
-              image,
-              width: 32.h,
-              height: 32.h,
-            ),
-            Text(
-              text,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -480,10 +427,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   ) {
     return ScaleButton(
       onTap: () {
-        if (_answers.intentions.contains(text)) {
-          _answers.intentions.remove(text);
+        if (_answers.professions.contains(text)) {
+          _answers.professions.remove(text);
         } else {
-          _answers.intentions.add(text);
+          _answers.professions.add(text);
         }
         setState(() {});
       },
@@ -493,7 +440,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: const Color(0xFFFEFEFE).withOpacity(.1),
-          border: _answers.intentions.contains(text)
+          border: _answers.professions.contains(text)
               ? const GradientBoxBorder(
                   gradient: LinearGradient(colors: [
                     Color(0xFFFFB383),
@@ -530,12 +477,12 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
               height: 24,
               width: 24,
               decoration: BoxDecoration(
-                border: _answers.intentions.contains(text)
+                border: _answers.professions.contains(text)
                     ? null
                     : Border.all(color: Colors.white.withOpacity(.5)),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: _answers.intentions.contains(text)
+              child: _answers.professions.contains(text)
                   ? const Center(child: Icon(IconlyBold.tickSquare))
                   : null,
             ),
@@ -570,13 +517,12 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
 
 class _Answers {
   String experience = "";
-  List<String> intentions = [];
-  String startAt = "title-time";
+  List<String> professions = [];
+  List<String> technologies = [];
 
   Map<String, dynamic> toMap() => {
         'experience': experience,
-        'intentions': intentions,
-        'startAt': startAt.split('-')[0],
-        'remindAt': startAt.split('-')[1],
+        'professions': professions,
+        'technologies': technologies,
       };
 }

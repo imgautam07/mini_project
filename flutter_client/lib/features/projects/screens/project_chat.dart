@@ -4,25 +4,26 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
-import 'package:flutter_client/common/models/user_info_model.dart';
 import 'package:flutter_client/features/auth/services/auth_services.dart';
+import 'package:flutter_client/features/home/provider/post_provider.dart';
+import 'package:flutter_client/features/projects/models/project_model.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iconsax/iconsax.dart';
-
 import 'package:http/http.dart' as http;
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
-class ChattingPage extends StatefulWidget {
-  const ChattingPage({super.key, required this.model});
+class ProjectChatting extends StatefulWidget {
+  const ProjectChatting({super.key, required this.model});
 
   @override
-  State<ChattingPage> createState() => _ChattingPageState();
+  State<ProjectChatting> createState() => _ProjectChattingState();
 
-  final UserInfoModel model;
+  final ProjectModel model;
 }
 
-class _ChattingPageState extends State<ChattingPage> {
+class _ProjectChattingState extends State<ProjectChatting> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   final FocusNode _messageFocusNode = FocusNode();
@@ -66,7 +67,7 @@ class _ChattingPageState extends State<ChattingPage> {
         body: {
           'message': message.message,
           'username': message.username,
-          'room': "OpenChat",
+          'room': widget.model.title,
         },
       );
 
@@ -96,6 +97,7 @@ class _ChattingPageState extends State<ChattingPage> {
 
   @override
   Widget build(BuildContext context) {
+    var u = context.watch<AuthServices>().userInfoModel!.id;
     return Scaffold(
       body: Stack(
         children: [
@@ -174,7 +176,7 @@ class _ChattingPageState extends State<ChattingPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      widget.model.name,
+                                      widget.model.title,
                                       style: TextStyle(
                                         fontSize: 14.sp,
                                         fontWeight: FontWeight.w600,
@@ -209,8 +211,7 @@ class _ChattingPageState extends State<ChattingPage> {
                     itemBuilder: (context, index) {
                       return Row(
                         children: [
-                          if (_messages[index].username != widget.model.id)
-                            const Spacer(),
+                          if (_messages[index].username == u) const Spacer(),
                           SizedBox(
                             child: Container(
                               padding: EdgeInsets.symmetric(
@@ -220,26 +221,44 @@ class _ChattingPageState extends State<ChattingPage> {
                                 maxWidth: MediaQuery.sizeOf(context).width * .6,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    _messages[index].username != widget.model.id
-                                        ? null
-                                        : const Color(0xFF140739),
+                                color: _messages[index].username == u
+                                    ? null
+                                    : const Color(0xFF140739),
                                 borderRadius: BorderRadius.circular(12),
-                                gradient:
-                                    _messages[index].username == widget.model.id
-                                        ? null
-                                        : LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              const Color(0xFF412A81),
-                                              const Color(0xFF412A81)
-                                                  .withOpacity(.8),
-                                              // Color(0xFF140739),
-                                            ],
-                                          ),
+                                gradient: _messages[index].username != u
+                                    ? null
+                                    : LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          const Color(0xFF412A81),
+                                          const Color(0xFF412A81)
+                                              .withOpacity(.8),
+                                          // Color(0xFF140739),
+                                        ],
+                                      ),
                               ),
-                              child: Text(_messages[index].message),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (_messages[index].username != u)
+                                    FutureBuilder(
+                                        future: Provider.of<PostProvider>(
+                                                context,
+                                                listen: false)
+                                            .getUserById(
+                                                _messages[index].username),
+                                        builder: (context, snapshot) {
+                                          return Text(
+                                            snapshot.data?.name ?? "",
+                                            style: TextStyle(
+                                              color: AppColors.primaryColor,
+                                            ),
+                                          );
+                                        }),
+                                  Text(_messages[index].message),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -300,15 +319,6 @@ class _ChattingPageState extends State<ChattingPage> {
       ),
     );
   }
-}
-
-class Chat {
-  String message;
-  bool isYou;
-  Chat({
-    required this.message,
-    required this.isYou,
-  });
 }
 
 class EventSourceSubscription {

@@ -11,10 +11,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
-  const PersonalInfoScreen({super.key});
+  const PersonalInfoScreen({super.key, required this.tech, required this.prof, required this.exp});
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
+
+  final List<String> tech;
+  final List<String> prof;
+  final String exp;
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
@@ -86,7 +90,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                   }
                                 }
                               }
-                              await value.postProfile();
+
                               if (context.mounted) Navigator.pop(context);
                             },
                       child: SizedBox(

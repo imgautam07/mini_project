@@ -1,20 +1,27 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_client/common/manager/local_manager.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
 class NormalNetworkManager {
-  final http.Client client;
-
-  NormalNetworkManager({required this.client});
+  NormalNetworkManager();
 
   Future<http.Response> getResponseFromUrl(
     String url, {
     Map<String, String>? headers,
   }) async {
     try {
-      return await client.get(Uri.parse(url), headers: headers);
+      String? token = await LocalDataManager.getToken();
+      if (token != null) {
+        headers ??= {};
+        headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+        headers['content-type'] = 'application/json';
+        headers['Accept'] = '*/*';
+      }
+
+      return await http.get(Uri.parse(url), headers: headers);
     } on Exception {
       Fluttertoast.showToast(msg: "Failed to make network call");
       // return http.Response("Failed to resolve", 401);
@@ -25,7 +32,13 @@ class NormalNetworkManager {
   Future<http.Response> postResponseFromUrl(String url,
       {Map<String, dynamic>? data, Map<String, String>? headers}) async {
     try {
-      return await client.post(Uri.parse(url), body: data, headers: headers);
+      String? token = await LocalDataManager.getToken();
+      if (token != null) {
+        headers ??= {};
+        headers['Authorization'] = 'Bearer $token';
+      }
+      return await http.post(Uri.parse(url),
+          body: jsonEncode(data), headers: headers);
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: "Failed to make network call");
       // return http.Response("Failed to resolve", 401);
@@ -37,7 +50,12 @@ class NormalNetworkManager {
   Future<http.Response> putResponseFromUrl(String url,
       {Map<String, dynamic>? data, Map<String, String>? headers}) async {
     try {
-      return await client.put(Uri.parse(url), body: data, headers: headers);
+      String? token = await LocalDataManager.getToken();
+      if (token != null) {
+        headers ??= {};
+        headers['Authorization'] = 'Bearer $token';
+      }
+      return await http.put(Uri.parse(url), body: data, headers: headers);
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: "Failed to make network call");
       // return http.Response("Failed to resolve", 401);
@@ -49,7 +67,12 @@ class NormalNetworkManager {
   Future<http.Response> deleteResponseFromUrl(String url,
       {Map<String, dynamic>? data, Map<String, String>? headers}) async {
     try {
-      return await client.delete(Uri.parse(url), body: data, headers: headers);
+      String? token = await LocalDataManager.getToken();
+      if (token != null) {
+        headers ??= {};
+        headers['Authorization'] = 'Bearer $token';
+      }
+      return await http.delete(Uri.parse(url), body: data, headers: headers);
     } on Exception {
       Fluttertoast.showToast(msg: "Failed to make network call");
       // return http.Response("Failed to resolve", 401);
@@ -70,6 +93,10 @@ class MultipartNetworkManager {
     required String fileKey,
   }) async {
     try {
+      String? token = await LocalDataManager.getToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
       for (var k in data.keys) {
         request.fields[k] = data[k];
       }

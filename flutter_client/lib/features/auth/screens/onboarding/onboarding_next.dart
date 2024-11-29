@@ -185,7 +185,7 @@ class _OnboardingNextScreenState extends State<OnboardingNextScreen> {
                   height: 375.h,
                   width: double.infinity,
                   child: PageView(
-                    // physics: const NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     controller: _pageController,
                     children: [
                       _onbText(

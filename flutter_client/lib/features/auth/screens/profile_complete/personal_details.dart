@@ -1,16 +1,11 @@
-import 'dart:io';
-
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
-import 'package:flutter_client/common/utils.dart';
 import 'package:flutter_client/common/widgets/custom_textfield.dart';
 import 'package:flutter_client/features/auth/services/auth_services.dart';
 import 'package:flutter_client/features/root_screen.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class PersonalDetails extends StatefulWidget {
@@ -22,7 +17,6 @@ class PersonalDetails extends StatefulWidget {
 }
 
 class _PersonalDetailsState extends State<PersonalDetails> {
-  File? pickedFile;
   final TextEditingController _nameController = TextEditingController();
   final _fKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -45,12 +39,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     _isLoading = true;
                     setState(() {});
 
-                    await Future.delayed(const Duration(seconds: 2));
+                    widget.data['name'] = _nameController.text;
+                    var r =
+                        await Provider.of<AuthServices>(context, listen: false)
+                            .postProfile(widget.data);
 
                     _isLoading = false;
                     setState(() {});
 
-                    if (context.mounted) {
+                    if (r && context.mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
                         CupertinoPageRoute(
@@ -114,73 +111,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   child: Column(
                     children: [
                       SizedBox(height: 16.h),
-                      Center(
-                        child: ScaleButton(
-                          onTap: _isLoading
-                              ? null
-                              : () async {
-                                  var r = await sourceSelect(context);
-                                  if (r != null) {
-                                    var img1 = await ImagePicker()
-                                        .pickImage(source: r);
-                                    if (img1 != null) {
-                                      var img2 = await ImageCropper().cropImage(
-                                          sourcePath: img1.path,
-                                          aspectRatio: const CropAspectRatio(
-                                              ratioX: 1, ratioY: 1));
-
-                                      if (img2 != null) {
-                                        pickedFile = File(img2.path);
-                                        setState(() {});
-                                      }
-                                    }
-                                  }
-                                },
-                          child: SizedBox(
-                            height: 175.h,
-                            width: 175.h,
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(1000),
-                                    child: Image(
-                                      image: pickedFile != null
-                                          ? FileImage(pickedFile!)
-                                          : const AssetImage(
-                                              'assets/images/profile.png'),
-                                      fit: BoxFit.cover,
-                                      height: 160.w,
-                                      width: 160.w,
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Container(
-                                    height: 30.w,
-                                    width: 30.w,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.edit,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 32.h),
                       CustomTextField(
                         controller: _nameController,
                         enabled: !_isLoading,

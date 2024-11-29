@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_client/common/constants/app_colors.dart';
 import 'package:flutter_client/features/auth/services/auth_services.dart';
+import 'package:flutter_client/features/home/provider/post_provider.dart';
+import 'package:flutter_client/features/projects/provider/project_provider.dart';
 import 'package:flutter_client/features/splash_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +16,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthServices()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider(create: (_) => ProjectProvider()),
       ],
       child: const MainApp(),
     ),

@@ -9,6 +9,7 @@ import 'package:flutter_client/features/auth/screens/profile_complete/questions_
 import 'package:flutter_client/features/auth/services/auth_services.dart';
 import 'package:flutter_client/features/root_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:string_validator/string_validator.dart';
 
@@ -185,13 +186,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           text: "Sign Up",
                           onTap: () async {
                             if (_fKey.currentState?.validate() ?? false) {
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                CupertinoPageRoute(
-                                  builder: (_) => const QuestionsScreen(),
-                                ),
-                                (route) => false,
+                              var res = await Provider.of<AuthServices>(context,
+                                      listen: false)
+                                  .signup(
+                                email: _mail.text,
+                                password: _password.text,
                               );
+
+                              if (res && context.mounted) {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (_) => const QuestionsScreen(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg: "Failed to create account!!",
+                                );
+                              }
                             }
                           },
                         ),

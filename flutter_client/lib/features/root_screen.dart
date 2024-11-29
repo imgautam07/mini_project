@@ -1,9 +1,12 @@
+import 'package:flutter_client/common/buttons/scale_button.dart';
 import 'package:flutter_client/common/constants/app_images.dart';
 import 'package:flutter_client/features/discover/screens/discover_screen.dart';
 import 'package:flutter_client/features/home/screens/home_screen.dart';
+import 'package:flutter_client/features/home/screens/new_post.dart';
 import 'package:flutter_client/features/profile/screens/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_client/features/projects/screens/new_project_screen.dart';
 import 'package:flutter_client/features/projects/screens/project_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
@@ -21,6 +24,48 @@ class _RootScreenState extends State<RootScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: (_selected != 0 && _selected != 1)
+          ? null
+          : Padding(
+              padding: EdgeInsets.only(bottom: 40.h, top: 40.h),
+              child: ScaleButton(
+                scale: .93,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoDialogRoute(
+                        builder: (context) {
+                          if (_selected == 0) {
+                            return const NewPostScreen();
+                          }
+                          return const NewProjectScreen();
+                        },
+                        context: context),
+                  );
+                },
+                child: Container(
+                  height: 60.w,
+                  width: 60.w,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFFFB383),
+                        Color(0xFFDD96D6),
+                        Color(0xFF9452FF),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      AppImages.plus,
+                      width: 24.w,
+                      height: 24.w,
+                    ),
+                  ),
+                ),
+              ),
+            ),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -55,20 +100,20 @@ class _RootScreenState extends State<RootScreen> {
                     selectedImage: AppImages.homeActive,
                     title: "Home",
                   ),
+                  // _navItem(
+                  //   1,
+                  //   image: AppImages.discover,
+                  //   selectedImage: AppImages.discoverActive,
+                  //   title: "Discover",
+                  // ),
                   _navItem(
                     1,
-                    image: AppImages.discover,
-                    selectedImage: AppImages.discoverActive,
-                    title: "Discover",
-                  ),
-                  _navItem(
-                    2,
                     image: AppImages.library,
                     selectedImage: AppImages.libraryActive,
                     title: "Projects",
                   ),
                   _navItem(
-                    3,
+                    2,
                     image: AppImages.profile,
                     selectedImage: AppImages.profileActive,
                     title: "Profile",
@@ -78,7 +123,7 @@ class _RootScreenState extends State<RootScreen> {
             ),
             body: [
               const HomeScreen(),
-              const DiscoverScreen(),
+              // const DiscoverScreen(),
               const ProjectScreen(),
               const ProfileScreen(),
             ][_selected],
